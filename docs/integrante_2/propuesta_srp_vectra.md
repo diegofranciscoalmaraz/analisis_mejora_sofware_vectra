@@ -410,3 +410,617 @@ Esta será la base de la propuesta de mejora desarrollada por el integrante 2.
 | Mezcla entre interfaz y lógica | Cambios visuales pueden afectar procesos internos |
 
 Por estas razones, se considera conveniente reorganizar el software de VECTRA mediante componentes especializados y con responsabilidades claramente definidas.
+
+# 3. Propuesta de mejora aplicando el Principio de Responsabilidad Única
+
+## 3.1 Principio utilizado
+
+Para mejorar la organización del software de VECTRA se propone aplicar el Principio de Responsabilidad Única, conocido como SRP por sus siglas en inglés (*Single Responsibility Principle*).
+
+La idea principal de este principio es que cada clase debe tener una responsabilidad principal claramente definida.
+
+Esto significa que una clase no debería encargarse al mismo tiempo de obtener datos de sensores, almacenar información, detectar anomalías, generar alertas y preparar información para el dashboard.
+
+Separar estas funciones permite que cada componente tenga un propósito específico y pueda modificarse de manera más independiente.
+
+En VECTRA, las responsabilidades principales identificadas pueden dividirse en:
+
+- Adquisición de datos.
+- Procesamiento de telemetría.
+- Gestión de recorridos.
+- Persistencia de información.
+- Detección de anomalías.
+- Generación de alertas.
+- Preparación de información para visualización.
+- Generación de reportes.
+
+A partir de estas responsabilidades se propone crear diferentes clases especializadas.
+
+---
+
+## 3.2 Estructura general propuesta
+
+La propuesta del integrante 2 divide el software de VECTRA en las siguientes clases:
+
+```text
+SensorService
+TelemetryService
+TripService
+TelemetryRepository
+AnomalyDetectionService
+AlertService
+DashboardService
+ReportService
+```
+
+Cada clase tendrá una responsabilidad principal dentro del sistema.
+
+La estructura general puede entenderse de la siguiente manera:
+
+```text
+Sensores
+   ↓
+SensorService
+   ↓
+TelemetryService
+   ├──────────────→ TripService
+   │
+   ↓
+TelemetryRepository
+   ↓
+AnomalyDetectionService
+   ↓
+AlertService
+
+TelemetryRepository ─────→ DashboardService
+TelemetryRepository ─────→ ReportService
+
+AlertService ─────────────→ DashboardService
+AnomalyDetectionService ─→ ReportService
+```
+
+---
+
+# 3.3 SensorService
+
+## Responsabilidad
+
+`SensorService` será responsable exclusivamente de obtener las mediciones provenientes de los sensores instalados en el vehículo.
+
+No deberá encargarse de guardar los datos, analizarlos o mostrarlos en el dashboard.
+
+Su responsabilidad termina una vez que obtiene las mediciones necesarias y las entrega al componente encargado de procesarlas.
+
+## Funciones propuestas
+
+```java
+leerAceleracion()
+leerVibracion()
+leerInclinacion()
+leerTemperatura()
+obtenerGPS()
+```
+
+## Ejemplo conceptual
+
+```java
+public class SensorService {
+
+    public void leerAceleracion() {
+        System.out.println("Leyendo aceleración...");
+    }
+
+    public void leerVibracion() {
+        System.out.println("Leyendo vibración...");
+    }
+
+    public void leerTemperatura() {
+        System.out.println("Leyendo temperatura...");
+    }
+
+    public void obtenerGPS() {
+        System.out.println("Obteniendo ubicación...");
+    }
+}
+```
+
+## Justificación
+
+Esta separación permite que los sensores puedan cambiar sin afectar directamente el resto del sistema.
+
+Por ejemplo, si en el futuro se reemplaza el sensor de movimiento utilizado por VECTRA, los principales cambios se concentrarían en este componente.
+
+---
+
+# 3.4 TelemetryService
+
+## Responsabilidad
+
+`TelemetryService` será responsable de recibir, organizar y validar las mediciones obtenidas de los sensores.
+
+Su función será preparar los datos antes de que sean almacenados o utilizados por otros componentes.
+
+## Funciones propuestas
+
+```java
+procesarMedicion()
+validarDatos()
+asociarRecorrido()
+```
+
+## Ejemplo conceptual
+
+```java
+public class TelemetryService {
+
+    public void procesarMedicion() {
+        System.out.println("Procesando telemetría...");
+    }
+
+    public void validarDatos() {
+        System.out.println("Validando datos...");
+    }
+
+    public void asociarRecorrido() {
+        System.out.println("Asociando mediciones al recorrido...");
+    }
+}
+```
+
+## Justificación
+
+La información obtenida por los sensores puede requerir validación y organización antes de almacenarse.
+
+Separar este procesamiento evita que `SensorService` tenga que conocer cómo se almacenan o analizan los datos.
+
+---
+
+# 3.5 TripService
+
+## Responsabilidad
+
+`TripService` será responsable de administrar los recorridos realizados por el vehículo.
+
+Cada conjunto de mediciones deberá estar asociado a un recorrido determinado.
+
+## Funciones propuestas
+
+```java
+iniciarRecorrido()
+finalizarRecorrido()
+consultarRecorrido()
+compararRecorridos()
+```
+
+## Ejemplo conceptual
+
+```java
+public class TripService {
+
+    public void iniciarRecorrido() {
+        System.out.println("Iniciando recorrido...");
+    }
+
+    public void finalizarRecorrido() {
+        System.out.println("Finalizando recorrido...");
+    }
+
+    public void consultarRecorrido() {
+        System.out.println("Consultando recorrido...");
+    }
+}
+```
+
+## Justificación
+
+La gestión de recorridos es una responsabilidad diferente al análisis de telemetría.
+
+Al separarla, el sistema puede administrar recorridos sin depender directamente del algoritmo de inteligencia artificial.
+
+---
+
+# 3.6 TelemetryRepository
+
+## Responsabilidad
+
+`TelemetryRepository` será responsable exclusivamente de almacenar y recuperar la información de telemetría.
+
+Esta clase representa la separación entre la lógica del sistema y la forma en que se almacenan los datos.
+
+## Funciones propuestas
+
+```java
+guardarMedicion()
+consultarMediciones()
+consultarHistorico()
+buscarPorRecorrido()
+```
+
+## Ejemplo conceptual
+
+```java
+public class TelemetryRepository {
+
+    public void guardarMedicion() {
+        System.out.println("Guardando medición...");
+    }
+
+    public void consultarMediciones() {
+        System.out.println("Consultando mediciones...");
+    }
+
+    public void consultarHistorico() {
+        System.out.println("Consultando histórico...");
+    }
+}
+```
+
+## Justificación
+
+Centralizar el acceso a datos evita que diferentes componentes implementen su propia lógica de almacenamiento.
+
+Por ejemplo, tanto el dashboard como el módulo de inteligencia artificial pueden necesitar información histórica.
+
+En lugar de escribir consultas independientes en cada componente, ambos pueden utilizar `TelemetryRepository`.
+
+Esto reduce la duplicación de código.
+
+---
+
+# 3.7 AnomalyDetectionService
+
+## Responsabilidad
+
+`AnomalyDetectionService` será responsable de analizar los datos y determinar si el comportamiento actual del vehículo se aleja de su patrón habitual.
+
+Este componente representa la parte de análisis e inteligencia artificial de VECTRA.
+
+## Funciones propuestas
+
+```java
+analizarDatos()
+compararPatron()
+detectarAnomalia()
+```
+
+## Ejemplo conceptual
+
+```java
+public class AnomalyDetectionService {
+
+    public void analizarDatos() {
+        System.out.println("Analizando datos...");
+    }
+
+    public void compararPatron() {
+        System.out.println("Comparando con patrón normal...");
+    }
+
+    public void detectarAnomalia() {
+        System.out.println("Buscando anomalías...");
+    }
+}
+```
+
+## Justificación
+
+La detección de anomalías puede evolucionar considerablemente durante el proyecto.
+
+En una primera versión podría utilizarse un método sencillo y posteriormente podría incorporarse un modelo de inteligencia artificial más avanzado.
+
+Gracias a esta separación, cambiar el algoritmo de detección no requeriría modificar directamente los componentes responsables de los sensores, recorridos o dashboard.
+
+---
+
+# 3.8 AlertService
+
+## Responsabilidad
+
+`AlertService` será responsable de generar y administrar las alertas del sistema cuando se detecte una desviación relevante.
+
+## Funciones propuestas
+
+```java
+generarAlerta()
+clasificarAlerta()
+obtenerAlertas()
+```
+
+## Ejemplo conceptual
+
+```java
+public class AlertService {
+
+    public void generarAlerta() {
+        System.out.println("Generando alerta...");
+    }
+
+    public void clasificarAlerta() {
+        System.out.println("Clasificando alerta...");
+    }
+}
+```
+
+## Justificación
+
+Detectar una anomalía y comunicarla al usuario son responsabilidades distintas.
+
+`AnomalyDetectionService` debe determinar si existe una desviación.
+
+`AlertService` debe decidir cómo representar o administrar dicha alerta.
+
+Esto permitiría que en el futuro VECTRA pudiera incorporar diferentes métodos de notificación sin modificar el algoritmo de detección.
+
+Por ejemplo:
+
+```text
+Alerta visual
+Correo electrónico
+Notificación móvil
+Mensaje al administrador
+```
+
+---
+
+# 3.9 DashboardService
+
+## Responsabilidad
+
+`DashboardService` será responsable de preparar la información necesaria para la interfaz gráfica.
+
+No será responsable directamente de leer sensores ni ejecutar algoritmos de inteligencia artificial.
+
+## Funciones propuestas
+
+```java
+obtenerIndicadores()
+obtenerHistoricos()
+obtenerEstadoVehiculo()
+obtenerRecorrido()
+```
+
+## Ejemplo conceptual
+
+```java
+public class DashboardService {
+
+    public void obtenerIndicadores() {
+        System.out.println("Preparando indicadores...");
+    }
+
+    public void obtenerHistoricos() {
+        System.out.println("Preparando históricos...");
+    }
+
+    public void obtenerEstadoVehiculo() {
+        System.out.println("Obteniendo estado...");
+    }
+}
+```
+
+## Justificación
+
+El dashboard debe concentrarse en preparar y presentar información.
+
+Separarlo de la lógica de análisis permite modificar la interfaz sin alterar el procesamiento interno del sistema.
+
+Por ejemplo, VECTRA podría cambiar de una aplicación web a una aplicación móvil y conservar gran parte de la lógica del sistema.
+
+---
+
+# 3.10 ReportService
+
+## Responsabilidad
+
+`ReportService` será responsable de generar resúmenes y reportes relacionados con los recorridos y las mediciones.
+
+## Funciones propuestas
+
+```java
+generarReporte()
+resumirRecorrido()
+obtenerAnomalias()
+```
+
+## Ejemplo conceptual
+
+```java
+public class ReportService {
+
+    public void generarReporte() {
+        System.out.println("Generando reporte...");
+    }
+
+    public void resumirRecorrido() {
+        System.out.println("Generando resumen del recorrido...");
+    }
+}
+```
+
+## Justificación
+
+La generación de reportes es una responsabilidad distinta de la visualización en tiempo real.
+
+El dashboard puede mostrar información actual, mientras que `ReportService` puede generar resultados resumidos para su consulta posterior.
+
+Separar ambas funciones facilita modificar el formato de los reportes sin afectar directamente la interfaz.
+
+---
+
+# 3.11 Relaciones entre las clases
+
+Las clases propuestas no funcionan de forma completamente independiente.
+
+Existen relaciones necesarias entre ellas.
+
+## SensorService → TelemetryService
+
+`SensorService` obtiene las mediciones y las entrega a `TelemetryService`.
+
+```text
+SensorService
+      ↓
+TelemetryService
+```
+
+## TelemetryService → TelemetryRepository
+
+Después de validar y organizar las mediciones, `TelemetryService` puede solicitar que sean almacenadas.
+
+```text
+TelemetryService
+      ↓
+TelemetryRepository
+```
+
+## TelemetryService → TripService
+
+Las mediciones necesitan asociarse con el recorrido correspondiente.
+
+```text
+TelemetryService
+      ↓
+TripService
+```
+
+## AnomalyDetectionService → TelemetryRepository
+
+El sistema de detección necesita consultar datos históricos para comparar el comportamiento actual con recorridos anteriores.
+
+```text
+TelemetryRepository
+      ↓
+AnomalyDetectionService
+```
+
+## AnomalyDetectionService → AlertService
+
+Cuando se identifica una desviación relevante, se genera una alerta.
+
+```text
+AnomalyDetectionService
+      ↓
+AlertService
+```
+
+## TelemetryRepository → DashboardService
+
+El dashboard necesita consultar información almacenada para presentar históricos e indicadores.
+
+```text
+TelemetryRepository
+      ↓
+DashboardService
+```
+
+## AlertService → DashboardService
+
+Las alertas generadas también deben poder mostrarse en la interfaz.
+
+```text
+AlertService
+      ↓
+DashboardService
+```
+
+## TelemetryRepository → ReportService
+
+Los reportes necesitan consultar las mediciones almacenadas.
+
+```text
+TelemetryRepository
+      ↓
+ReportService
+```
+
+---
+
+# 3.12 Flujo propuesto
+
+Con la nueva estructura, un recorrido podría procesarse de la siguiente manera:
+
+```text
+1. El vehículo inicia un recorrido
+                ↓
+2. TripService registra el recorrido
+                ↓
+3. SensorService obtiene mediciones
+                ↓
+4. TelemetryService valida y organiza los datos
+                ↓
+5. TelemetryRepository almacena las mediciones
+                ↓
+6. AnomalyDetectionService analiza los datos
+                ↓
+7. Se compara el comportamiento con el patrón habitual
+                ↓
+8. Si existe una desviación:
+                ↓
+9. AlertService genera una alerta
+                ↓
+10. DashboardService presenta los resultados
+                ↓
+11. ReportService puede generar un resumen del recorrido
+```
+
+Este flujo conserva las funciones previstas originalmente para VECTRA, pero distribuye las responsabilidades entre componentes especializados.
+
+---
+
+# 3.13 Comparación conceptual inicial
+
+## Antes
+
+Una implementación poco organizada podría terminar concentrando operaciones como:
+
+```java
+public class VectraSystem {
+
+    public void leerSensores() {}
+
+    public void registrarRecorrido() {}
+
+    public void guardarMediciones() {}
+
+    public void analizarDatos() {}
+
+    public void detectarAnomalia() {}
+
+    public void generarAlerta() {}
+
+    public void mostrarDashboard() {}
+
+    public void generarReporte() {}
+}
+```
+
+Esta clase tendría demasiadas responsabilidades.
+
+## Propuesta
+
+La nueva estructura distribuye esas operaciones:
+
+```text
+VectraSystem
+      │
+      ├── SensorService
+      ├── TelemetryService
+      ├── TripService
+      ├── TelemetryRepository
+      ├── AnomalyDetectionService
+      ├── AlertService
+      ├── DashboardService
+      └── ReportService
+```
+
+De esta forma, cada componente tiene una responsabilidad más específica y clara.
+
+---
+
+# 3.14 Resultado de la propuesta
+
+La separación funcional propuesta busca que VECTRA tenga una estructura más sencilla de comprender y modificar.
+
+En lugar de concentrar todas las operaciones dentro de un solo componente, las responsabilidades se distribuyen según su función.
+
+La propuesta permite que cambios futuros, como incorporar un nuevo sensor, modificar el algoritmo de inteligencia artificial, cambiar el sistema de almacenamiento o agregar nuevas formas de notificación, puedan realizarse con menor impacto sobre las demás partes del software.
