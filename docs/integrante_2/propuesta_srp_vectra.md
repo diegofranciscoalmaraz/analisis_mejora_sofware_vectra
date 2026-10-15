@@ -224,3 +224,189 @@ Es importante aclarar que el proyecto se encuentra actualmente en una etapa conc
 Por esta razón, el diseño original presentado en este análisis se construye a partir de las responsabilidades funcionales y componentes definidos en la documentación de VECTRA, y no a partir de una implementación completa de clases ya desarrolladas.
 
 Este análisis servirá como punto de partida para proponer posteriormente una estructura de software basada en clases pequeñas y especializadas.
+
+# 2. Análisis de problemas de diseño
+
+## 2.1 Concentración excesiva de responsabilidades
+
+VECTRA contempla múltiples funciones diferentes dentro de un mismo sistema: adquisición de datos, comunicación, almacenamiento, procesamiento, análisis mediante inteligencia artificial, generación de alertas, visualización en dashboard, gestión de recorridos y generación de reportes.
+
+Si estas funciones se implementaran dentro de una sola clase principal o en un número reducido de componentes, el diseño podría volverse difícil de mantener.
+
+Por ejemplo, una clase encargada simultáneamente de leer sensores, almacenar datos, detectar anomalías y preparar información para el dashboard tendría demasiadas responsabilidades diferentes.
+
+Esto provocaría que una misma clase tuviera múltiples motivos para cambiar.
+
+Un cambio en los sensores, en el almacenamiento o en el algoritmo de detección de anomalías podría obligar a modificar el mismo componente.
+
+## 2.2 Dificultad de mantenimiento
+
+Una clase con muchas responsabilidades suele crecer conforme se agregan nuevas funcionalidades.
+
+En VECTRA esto sería especialmente importante porque el proyecto contempla varias funciones que podrían evolucionar de manera independiente.
+
+Por ejemplo:
+
+- Los sensores utilizados podrían cambiar.
+- El método de almacenamiento podría modificarse.
+- El algoritmo de detección de anomalías podría mejorar.
+- El dashboard podría incluir nuevas gráficas.
+- Podrían añadirse nuevos tipos de alertas.
+- Los reportes podrían requerir nuevos formatos.
+
+Si toda esta lógica estuviera concentrada en pocos componentes, localizar el código relacionado con una funcionalidad específica sería más complicado.
+
+También aumentaría el riesgo de modificar accidentalmente una parte del sistema que ya funcionaba correctamente.
+
+## 2.3 Alto acoplamiento entre componentes
+
+Otro posible problema es el acoplamiento excesivo.
+
+El acoplamiento ocurre cuando una parte del sistema depende demasiado de la implementación interna de otra.
+
+Por ejemplo, si el módulo encargado de detectar anomalías accediera directamente al código de los sensores y al almacenamiento, cualquier cambio en esos componentes podría obligar a modificar también el algoritmo de análisis.
+
+De la misma forma, el dashboard no debería depender directamente de la forma en que los sensores capturan la información.
+
+El dashboard solamente necesita recibir información procesada que pueda ser mostrada al usuario.
+
+Reducir estas dependencias permite que los componentes evolucionen de manera más independiente.
+
+## 2.4 Dificultad para realizar pruebas
+
+Cuando varias responsabilidades se encuentran mezcladas en una misma clase, también resulta más difícil realizar pruebas.
+
+Por ejemplo, para probar solamente el algoritmo de detección de anomalías no debería ser necesario conectar físicamente el ESP32, los sensores, el GPS y el dashboard.
+
+El componente de análisis debería poder probarse utilizando datos previamente almacenados o datos de prueba.
+
+De la misma manera, debería ser posible probar:
+
+- El almacenamiento sin utilizar inteligencia artificial.
+- El dashboard sin conectar sensores reales.
+- El sistema de alertas utilizando anomalías simuladas.
+- La gestión de recorridos sin ejecutar todo el sistema IoT.
+
+La separación de responsabilidades facilita las pruebas unitarias porque cada componente puede evaluarse de forma individual.
+
+## 2.5 Posible duplicación de código
+
+Si las responsabilidades no se encuentran correctamente separadas, diferentes partes del sistema podrían repetir operaciones similares.
+
+Por ejemplo, la consulta de mediciones históricas podría utilizarse en:
+
+- El dashboard.
+- Los reportes.
+- La detección de anomalías.
+- La comparación de recorridos.
+
+Si cada componente implementara su propia lógica para consultar los datos, existiría código duplicado.
+
+Esto aumentaría el mantenimiento necesario, ya que un cambio en la forma de recuperar los datos tendría que realizarse en varios lugares.
+
+Una estructura mejor organizada debería centralizar las operaciones comunes y permitir que otros componentes las reutilicen.
+
+## 2.6 Dificultad para incorporar nuevas funcionalidades
+
+VECTRA está planteado como un proyecto que puede evolucionar posteriormente.
+
+Por ejemplo, podrían incorporarse nuevas características como:
+
+- Nuevos sensores.
+- Nuevos algoritmos de detección.
+- Notificaciones por correo electrónico o aplicaciones móviles.
+- Gestión de varios vehículos.
+- Recomendaciones de mantenimiento.
+- Nuevos tipos de reportes.
+- Comparaciones entre diferentes vehículos.
+
+Si la estructura del sistema no separa correctamente las responsabilidades, agregar estas funcionalidades podría requerir modificar una gran cantidad de código existente.
+
+Esto aumenta la posibilidad de introducir errores.
+
+Una estructura modular permite agregar nuevos componentes con menor impacto en el resto del sistema.
+
+## 2.7 Dependencia entre la interfaz y la lógica del sistema
+
+Otro problema que debe evitarse es mezclar la lógica del dashboard con el procesamiento de los datos.
+
+La interfaz debe encargarse principalmente de presentar información.
+
+No debería contener directamente la lógica utilizada para:
+
+- Leer sensores.
+- Procesar telemetría.
+- Detectar anomalías.
+- Guardar información.
+- Comparar recorridos.
+
+Si la lógica se mezcla con la interfaz, cualquier cambio visual podría afectar procesos internos del sistema.
+
+Separar ambas responsabilidades facilita modificar el dashboard sin alterar el funcionamiento de los demás componentes.
+
+## 2.8 Dificultad para identificar responsabilidades
+
+Cuando una clase realiza demasiadas operaciones, también resulta más difícil comprender cuál es su propósito.
+
+Por ejemplo, una clase llamada `VectraSystem` que contuviera métodos como:
+
+```java
+leerSensores();
+guardarDatos();
+analizarDatos();
+detectarAnomalia();
+generarAlerta();
+mostrarDashboard();
+generarReporte();
+```
+
+tendría demasiadas responsabilidades.
+
+El nombre de la clase tampoco permitiría identificar claramente qué parte del sistema administra.
+
+Utilizar clases más pequeñas y con nombres específicos permite comprender más fácilmente la estructura del software.
+
+## 2.9 Relación con el Principio de Responsabilidad Única
+
+Los problemas anteriores pueden reducirse aplicando el Principio de Responsabilidad Única o SRP (*Single Responsibility Principle*).
+
+Este principio propone que cada clase tenga una responsabilidad principal claramente definida.
+
+En VECTRA, esto permitiría separar responsabilidades como:
+
+```text id="y67kjg"
+Adquisición de datos
+        ↓
+Procesamiento de telemetría
+        ↓
+Almacenamiento
+        ↓
+Gestión de recorridos
+        ↓
+Detección de anomalías
+        ↓
+Generación de alertas
+        ↓
+Visualización
+        ↓
+Reportes
+```
+
+En lugar de concentrar estas operaciones en una sola clase, cada responsabilidad puede asignarse a un componente especializado.
+
+Esta será la base de la propuesta de mejora desarrollada por el integrante 2.
+
+## 2.10 Resumen de los problemas encontrados
+
+| Problema | Consecuencia |
+|---|---|
+| Exceso de responsabilidades | Clases grandes y difíciles de comprender |
+| Alto acoplamiento | Un cambio puede afectar varios componentes |
+| Dificultad de mantenimiento | Mayor esfuerzo para localizar y modificar código |
+| Dificultad de pruebas | Se necesita ejecutar componentes innecesarios |
+| Duplicación de código | La misma lógica puede aparecer en varios lugares |
+| Baja reutilización | Las funciones quedan ligadas a componentes específicos |
+| Poca extensibilidad | Agregar funciones puede afectar código existente |
+| Mezcla entre interfaz y lógica | Cambios visuales pueden afectar procesos internos |
+
+Por estas razones, se considera conveniente reorganizar el software de VECTRA mediante componentes especializados y con responsabilidades claramente definidas.
