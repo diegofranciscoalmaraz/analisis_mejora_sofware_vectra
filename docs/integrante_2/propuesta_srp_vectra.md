@@ -1024,3 +1024,148 @@ La separación funcional propuesta busca que VECTRA tenga una estructura más se
 En lugar de concentrar todas las operaciones dentro de un solo componente, las responsabilidades se distribuyen según su función.
 
 La propuesta permite que cambios futuros, como incorporar un nuevo sensor, modificar el algoritmo de inteligencia artificial, cambiar el sistema de almacenamiento o agregar nuevas formas de notificación, puedan realizarse con menor impacto sobre las demás partes del software.
+
+# 4. Diagrama UML de la propuesta mejorada
+
+La propuesta del integrante 2 reorganiza VECTRA mediante clases especializadas, aplicando el Principio de Responsabilidad Única.
+
+El siguiente diagrama muestra las clases principales, sus funciones y las relaciones entre ellas.
+
+```mermaid id="z6jngq"
+classDiagram
+
+class SensorService {
+    +leerAceleracion()
+    +leerVibracion()
+    +leerInclinacion()
+    +leerTemperatura()
+    +obtenerGPS()
+}
+
+class TelemetryService {
+    +procesarMedicion()
+    +validarDatos()
+    +asociarRecorrido()
+}
+
+class TripService {
+    +iniciarRecorrido()
+    +finalizarRecorrido()
+    +consultarRecorrido()
+    +compararRecorridos()
+}
+
+class TelemetryRepository {
+    +guardarMedicion()
+    +consultarMediciones()
+    +consultarHistorico()
+    +buscarPorRecorrido()
+}
+
+class AnomalyDetectionService {
+    +analizarDatos()
+    +compararPatron()
+    +detectarAnomalia()
+}
+
+class AlertService {
+    +generarAlerta()
+    +clasificarAlerta()
+    +obtenerAlertas()
+}
+
+class DashboardService {
+    +obtenerIndicadores()
+    +obtenerHistoricos()
+    +obtenerEstadoVehiculo()
+    +obtenerRecorrido()
+}
+
+class ReportService {
+    +generarReporte()
+    +resumirRecorrido()
+    +obtenerAnomalias()
+}
+
+SensorService --> TelemetryService : envia mediciones
+TelemetryService --> TripService : asocia recorrido
+TelemetryService --> TelemetryRepository : almacena datos
+
+AnomalyDetectionService --> TelemetryRepository : consulta historicos
+AnomalyDetectionService --> AlertService : genera evento
+
+DashboardService --> TelemetryRepository : consulta datos
+DashboardService --> AlertService : muestra alertas
+
+ReportService --> TelemetryRepository : consulta informacion
+ReportService --> AnomalyDetectionService : consulta resultados
+```
+
+## 4.1 Interpretación del diagrama
+
+El flujo inicia en `SensorService`, que obtiene las mediciones provenientes de los sensores del vehículo.
+
+Estas mediciones son enviadas a `TelemetryService`, responsable de validar, organizar y preparar la información.
+
+`TelemetryService` también se relaciona con `TripService`, ya que las mediciones deben asociarse con un recorrido específico.
+
+Posteriormente, la información es almacenada mediante `TelemetryRepository`.
+
+`AnomalyDetectionService` consulta los datos almacenados para analizar el comportamiento del vehículo y determinar si existe alguna desviación respecto al patrón habitual.
+
+Cuando se detecta una anomalía, `AlertService` administra la generación de la alerta.
+
+Por otra parte, `DashboardService` consulta los datos y las alertas para preparar la información que será presentada al usuario.
+
+Finalmente, `ReportService` utiliza la información almacenada y los resultados del análisis para generar reportes y resúmenes de los recorridos.
+
+## 4.2 Relación con el funcionamiento de VECTRA
+
+La estructura propuesta conserva el flujo funcional original del proyecto:
+
+```text id="0yx5qn"
+Medir
+  ↓
+Procesar
+  ↓
+Almacenar
+  ↓
+Analizar
+  ↓
+Detectar
+  ↓
+Alertar
+  ↓
+Visualizar / Reportar
+```
+
+La diferencia principal es que ahora cada etapa está representada por una clase especializada.
+
+## 4.3 Separación de responsabilidades
+
+La responsabilidad principal de cada clase es la siguiente:
+
+| Clase | Responsabilidad principal |
+|---|---|
+| `SensorService` | Obtener mediciones de los sensores |
+| `TelemetryService` | Validar y procesar telemetría |
+| `TripService` | Gestionar recorridos |
+| `TelemetryRepository` | Persistir y consultar datos |
+| `AnomalyDetectionService` | Detectar desviaciones |
+| `AlertService` | Administrar alertas |
+| `DashboardService` | Preparar información para visualización |
+| `ReportService` | Generar reportes |
+
+Esta distribución permite identificar claramente qué componente debe modificarse cuando cambia una funcionalidad específica.
+
+## 4.4 Ejemplo de impacto de cambios
+
+Si VECTRA incorporara un nuevo sensor, los principales cambios se realizarían en `SensorService`.
+
+Si se cambiara el algoritmo utilizado para detectar anomalías, el cambio se concentraría principalmente en `AnomalyDetectionService`.
+
+Si se agregara una nueva forma de alerta, el cambio se realizaría principalmente en `AlertService`.
+
+Si el formato de los reportes cambiara, se modificaría `ReportService`.
+
+De esta forma, las modificaciones tienen un impacto más localizado y reducen la necesidad de cambiar componentes que no están directamente relacionados.
