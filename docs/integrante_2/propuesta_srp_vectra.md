@@ -2009,3 +2009,290 @@ ReportService
 Esto permite modificar una responsabilidad sin alterar innecesariamente las demás.
 
 El código presentado es una representación conceptual de la arquitectura propuesta. Para una implementación funcional sería necesario integrar posteriormente los sensores reales, el ESP32, el mecanismo de comunicación, la base de datos, el modelo de detección de anomalías y la interfaz gráfica.
+
+# 10. Conclusión individual
+
+La propuesta desarrollada por el integrante 2 reorganiza el software de VECTRA mediante la separación funcional de responsabilidades, aplicando el Principio de Responsabilidad Única.
+
+A partir del diseño conceptual original se identificaron funciones relacionadas con la adquisición de datos, procesamiento de telemetría, gestión de recorridos, almacenamiento, detección de anomalías, generación de alertas, visualización y reportes.
+
+En lugar de concentrar estas responsabilidades en una sola clase o en componentes demasiado amplios, se propuso distribuirlas entre clases especializadas:
+
+- `SensorService`
+- `TelemetryService`
+- `TripService`
+- `TelemetryRepository`
+- `AnomalyDetectionService`
+- `AlertService`
+- `DashboardService`
+- `ReportService`
+
+La principal ventaja de esta propuesta es que cada clase tiene una responsabilidad principal claramente definida.
+
+Esto facilita el mantenimiento, ya que los cambios pueden realizarse en componentes específicos sin afectar innecesariamente otras partes del sistema.
+
+También mejora la reutilización del código, porque servicios como el acceso a datos pueden utilizarse desde diferentes módulos.
+
+Además, la separación permite realizar pruebas de forma más sencilla, ya que los componentes pueden evaluarse individualmente sin necesidad de ejecutar todo el sistema IoT.
+
+Finalmente, esta organización permite que VECTRA pueda incorporar nuevas funcionalidades, sensores, algoritmos, sistemas de notificación o tecnologías de almacenamiento sin tener que rediseñar completamente el software.
+
+Por estas razones, la propuesta basada en SRP representa una mejora respecto a una implementación con responsabilidades mezcladas y establece una base más organizada para el crecimiento futuro de VECTRA.
+
+# 11. Aportación individual del integrante 2
+
+## Propuesta desarrollada
+
+**Nombre de la propuesta:**
+
+Separación funcional de responsabilidades de VECTRA mediante el Principio de Responsabilidad Única (SRP).
+
+## Características principales
+
+La propuesta se diferencia de otras posibles soluciones porque organiza el sistema principalmente según sus responsabilidades funcionales.
+
+Cada función importante del sistema es asignada a una clase especializada.
+
+La estructura propuesta es:
+
+```text
+SensorService
+TelemetryService
+TripService
+TelemetryRepository
+AnomalyDetectionService
+AlertService
+DashboardService
+ReportService
+```
+
+El objetivo principal es evitar que una sola clase tenga múltiples motivos para cambiar.
+
+## Principio de diseño utilizado
+
+Se utilizó principalmente:
+
+```text
+SRP — Single Responsibility Principle
+Principio de Responsabilidad Única
+```
+
+La propuesta busca que cada clase tenga un propósito claro y específico.
+
+# 12. Evidencias de participación en GitHub
+
+La aportación individual se desarrollará en una rama propia del repositorio.
+
+## Rama
+
+```text
+propuesta-integrante-2
+```
+
+## Archivo principal
+
+```text
+docs/integrante_2/propuesta_srp_vectra.md
+```
+
+## Commits realizados
+
+La participación individual puede comprobarse mediante los siguientes commits:
+
+```text
+1. docs: documentar diseño original y responsabilidades de VECTRA
+
+2. docs: analizar problemas de diseño de VECTRA
+
+3. docs: agregar propuesta funcional de VECTRA aplicando SRP
+
+4. docs: agregar diagrama UML de la propuesta SRP
+
+5. docs: comparar diseños y justificar beneficios de la propuesta
+
+6. docs: agregar ejemplo de implementacion de la propuesta SRP
+```
+
+Cada commit representa una etapa diferente del desarrollo de la propuesta.
+
+Esto permite observar la evolución del trabajo y comprobar la participación individual del integrante.
+
+# 13. Enlace al repositorio
+
+Repositorio del equipo:
+
+```text
+https://github.com/diegofranciscoalmaraz/analisis_mejora_sofware_vectra
+```
+
+La propuesta del integrante 2 se encuentra desarrollada en la rama:
+
+```text
+propuesta-integrante-2
+```
+
+# 14. Checklist de cumplimiento de la actividad
+
+## 1. Descripción general del proyecto
+
+**Cumplido.**
+
+Se describe VECTRA como un sistema IoT orientado al monitoreo y detección de anomalías en el comportamiento de un vehículo.
+
+## 2. Identificación de responsabilidades
+
+**Cumplido.**
+
+Se identificaron responsabilidades relacionadas con:
+
+- Sensores.
+- ESP32.
+- Comunicación.
+- Almacenamiento.
+- Procesamiento.
+- Inteligencia artificial.
+- Alertas.
+- Dashboard.
+- Recorridos.
+- Reportes.
+
+## 3. Análisis de problemas de diseño
+
+**Cumplido.**
+
+Se explicaron problemas relacionados con:
+
+- Exceso de responsabilidades.
+- Dificultad de mantenimiento.
+- Alto acoplamiento.
+- Dificultad para realizar pruebas.
+- Posible duplicación.
+- Baja reutilización.
+- Dificultad para agregar funcionalidades.
+- Mezcla entre interfaz y lógica.
+
+## 4. Diagrama de estructura original
+
+**Cumplido.**
+
+Se presentó el flujo conceptual:
+
+```text
+Vehículo
+   ↓
+Sensores
+   ↓
+ESP32
+   ↓
+Datos
+   ↓
+IA
+   ↓
+Dashboard
+```
+
+y posteriormente se construyó un diagrama más detallado.
+
+## 5. Propuesta de mejora
+
+**Cumplido.**
+
+La propuesta separa las responsabilidades en clases especializadas aplicando SRP.
+
+## 6. Diagrama mejorado
+
+**Cumplido.**
+
+Se desarrolló un diagrama UML con:
+
+```text
+SensorService
+TelemetryService
+TripService
+TelemetryRepository
+AnomalyDetectionService
+AlertService
+DashboardService
+ReportService
+```
+
+incluyendo las relaciones entre las clases.
+
+## 7. Justificación de la solución
+
+**Cumplido.**
+
+Se explicaron beneficios relacionados con:
+
+- Mantenimiento.
+- Reutilización.
+- Pruebas.
+- Menor acoplamiento.
+- Mayor claridad.
+- Extensibilidad.
+- Incorporación de nuevas funcionalidades.
+
+## 8. Ejemplo de código
+
+**Incluido como apoyo adicional.**
+
+Se presentó una implementación conceptual en Java para demostrar la separación de responsabilidades.
+
+## 9. Evidencias de GitHub
+
+**Cumplido una vez realizados los commits.**
+
+La propuesta se desarrollará en una rama individual con varios commits identificables.
+
+## 10. Versión diferente por integrante
+
+**Cumplido para el integrante 2.**
+
+La versión desarrollada utiliza separación funcional y SRP.
+
+Los demás integrantes deben utilizar propuestas diferentes en organización de clases, distribución de responsabilidades o diseño general.
+
+# 15. Resumen final de la propuesta
+
+La propuesta del integrante 2 puede resumirse de la siguiente manera:
+
+```text
+DISEÑO ORIGINAL
+
+Vehículo
+   ↓
+Sensores
+   ↓
+ESP32
+   ↓
+Datos
+   ↓
+IA
+   ↓
+Dashboard
+
+
+PROPUESTA DEL INTEGRANTE 2
+
+SensorService
+      ↓
+TelemetryService
+      ↓
+TelemetryRepository
+      ↓
+AnomalyDetectionService
+      ↓
+AlertService
+      ↓
+DashboardService
+
+      +
+
+TripService
+
+      +
+
+ReportService
+```
+
+El diseño propuesto conserva las funciones principales de VECTRA, pero establece una separación explícita de responsabilidades para facilitar su mantenimiento y crecimiento.
