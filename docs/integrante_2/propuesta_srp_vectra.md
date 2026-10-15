@@ -1496,3 +1496,516 @@ La aplicación del Principio de Responsabilidad Única permite:
 - Facilitar el trabajo colaborativo.
 
 La estructura propuesta mantiene los objetivos originales de VECTRA, pero establece una organización de software más clara para su futura implementación y crecimiento.
+
+# 9. Ejemplo de implementación de la propuesta
+
+## 9.1 Objetivo del ejemplo
+
+El siguiente código muestra de manera conceptual cómo podría implementarse la propuesta de mejora utilizando clases separadas por responsabilidad.
+
+Se utiliza Java únicamente como lenguaje de ejemplo, siguiendo el formato presentado en la actividad.
+
+El objetivo no es desarrollar todavía todo el sistema funcional de VECTRA, sino demostrar cómo las responsabilidades pueden distribuirse entre diferentes clases.
+
+---
+
+## 9.2 Clase SensorService
+
+`SensorService` se encarga solamente de obtener las mediciones de los sensores.
+
+```java
+public class SensorService {
+
+    public double leerAceleracion() {
+        System.out.println("Leyendo aceleración...");
+        return 0.84;
+    }
+
+    public double leerVibracion() {
+        System.out.println("Leyendo vibración...");
+        return 0.12;
+    }
+
+    public double leerInclinacion() {
+        System.out.println("Leyendo inclinación...");
+        return 2.5;
+    }
+
+    public double leerTemperatura() {
+        System.out.println("Leyendo temperatura...");
+        return 28.4;
+    }
+
+    public String obtenerGPS() {
+        System.out.println("Obteniendo ubicación GPS...");
+        return "20.5888,-100.3899";
+    }
+}
+```
+
+Esta clase no almacena información ni detecta anomalías.
+
+Su responsabilidad termina después de obtener las mediciones.
+
+---
+
+## 9.3 Clase TelemetryService
+
+`TelemetryService` se encarga de recibir y preparar las mediciones obtenidas.
+
+```java
+public class TelemetryService {
+
+    public void validarDatos(double aceleracion, double vibracion,
+                             double temperatura) {
+
+        System.out.println("Validando datos de telemetría...");
+    }
+
+    public void procesarMedicion() {
+        System.out.println("Procesando medición...");
+    }
+
+    public void asociarRecorrido(int tripId) {
+        System.out.println(
+            "Asociando medición al recorrido: " + tripId
+        );
+    }
+}
+```
+
+De esta manera, la validación de las mediciones no tiene que realizarse directamente dentro de `SensorService`.
+
+---
+
+## 9.4 Clase TripService
+
+`TripService` administra los recorridos del vehículo.
+
+```java
+public class TripService {
+
+    public int iniciarRecorrido() {
+        System.out.println("Iniciando recorrido...");
+
+        return 1;
+    }
+
+    public void finalizarRecorrido(int tripId) {
+        System.out.println(
+            "Finalizando recorrido: " + tripId
+        );
+    }
+
+    public void consultarRecorrido(int tripId) {
+        System.out.println(
+            "Consultando recorrido: " + tripId
+        );
+    }
+
+    public void compararRecorridos(int trip1, int trip2) {
+        System.out.println(
+            "Comparando recorridos..."
+        );
+    }
+}
+```
+
+Esta clase no necesita conocer cómo funcionan físicamente los sensores ni cómo trabaja el algoritmo de inteligencia artificial.
+
+---
+
+## 9.5 Clase TelemetryRepository
+
+`TelemetryRepository` concentra las operaciones relacionadas con el almacenamiento y recuperación de información.
+
+```java
+public class TelemetryRepository {
+
+    public void guardarMedicion(
+        double aceleracion,
+        double vibracion,
+        double inclinacion,
+        double temperatura,
+        String gps,
+        int tripId
+    ) {
+
+        System.out.println(
+            "Guardando medición del recorrido: " + tripId
+        );
+    }
+
+    public void consultarMediciones(int tripId) {
+        System.out.println(
+            "Consultando mediciones del recorrido: " + tripId
+        );
+    }
+
+    public void consultarHistorico() {
+        System.out.println(
+            "Consultando historial de telemetría..."
+        );
+    }
+}
+```
+
+La ventaja de esta clase es que los demás servicios no necesitan implementar directamente la lógica de almacenamiento.
+
+---
+
+## 9.6 Clase AnomalyDetectionService
+
+`AnomalyDetectionService` concentra la lógica relacionada con la detección de desviaciones.
+
+```java
+public class AnomalyDetectionService {
+
+    public boolean detectarAnomalia(
+        double valorActual,
+        double patronNormal
+    ) {
+
+        double diferencia =
+            Math.abs(valorActual - patronNormal);
+
+        return diferencia > 0.5;
+    }
+
+    public void analizarDatos() {
+        System.out.println(
+            "Analizando comportamiento del vehículo..."
+        );
+    }
+
+    public void compararPatron() {
+        System.out.println(
+            "Comparando con patrón normal..."
+        );
+    }
+}
+```
+
+Este ejemplo utiliza una comparación muy sencilla solamente para representar conceptualmente la responsabilidad de la clase.
+
+En una implementación real, esta lógica podría reemplazarse posteriormente por un algoritmo de detección de anomalías o un modelo de inteligencia artificial.
+
+---
+
+## 9.7 Clase AlertService
+
+`AlertService` administra las alertas generadas a partir de una desviación.
+
+```java
+public class AlertService {
+
+    public void generarAlerta(String mensaje) {
+
+        System.out.println(
+            "ALERTA: " + mensaje
+        );
+    }
+
+    public String clasificarAlerta(
+        double nivelDesviacion
+    ) {
+
+        if (nivelDesviacion > 1.0) {
+            return "ALTA";
+        }
+
+        return "MODERADA";
+    }
+}
+```
+
+La detección de una anomalía y la comunicación de la alerta permanecen separadas.
+
+---
+
+## 9.8 Clase DashboardService
+
+`DashboardService` prepara la información necesaria para la interfaz.
+
+```java
+public class DashboardService {
+
+    public void obtenerIndicadores() {
+        System.out.println(
+            "Preparando indicadores del vehículo..."
+        );
+    }
+
+    public void obtenerHistoricos() {
+        System.out.println(
+            "Preparando información histórica..."
+        );
+    }
+
+    public void obtenerEstadoVehiculo() {
+        System.out.println(
+            "Obteniendo estado del vehículo..."
+        );
+    }
+
+    public void mostrarAlerta(String alerta) {
+        System.out.println(
+            "Mostrando en dashboard: " + alerta
+        );
+    }
+}
+```
+
+Esta clase no tiene que leer directamente los sensores ni ejecutar el algoritmo de detección.
+
+---
+
+## 9.9 Clase ReportService
+
+`ReportService` se encarga de crear resúmenes de los recorridos.
+
+```java
+public class ReportService {
+
+    public void generarReporte(int tripId) {
+
+        System.out.println(
+            "Generando reporte del recorrido: "
+            + tripId
+        );
+    }
+
+    public void resumirRecorrido(int tripId) {
+
+        System.out.println(
+            "Generando resumen del recorrido: "
+            + tripId
+        );
+    }
+}
+```
+
+Esto permite modificar posteriormente el formato de los reportes sin afectar las demás partes del sistema.
+
+---
+
+# 9.10 Ejemplo de integración
+
+Las clases anteriores pueden colaborar mediante una clase encargada de coordinar el flujo general.
+
+Esta clase no debe implementar directamente todas las operaciones, sino utilizar los servicios correspondientes.
+
+```java
+public class VectraApplication {
+
+    private SensorService sensorService;
+    private TelemetryService telemetryService;
+    private TripService tripService;
+    private TelemetryRepository telemetryRepository;
+    private AnomalyDetectionService anomalyService;
+    private AlertService alertService;
+    private DashboardService dashboardService;
+    private ReportService reportService;
+
+    public VectraApplication() {
+
+        sensorService =
+            new SensorService();
+
+        telemetryService =
+            new TelemetryService();
+
+        tripService =
+            new TripService();
+
+        telemetryRepository =
+            new TelemetryRepository();
+
+        anomalyService =
+            new AnomalyDetectionService();
+
+        alertService =
+            new AlertService();
+
+        dashboardService =
+            new DashboardService();
+
+        reportService =
+            new ReportService();
+    }
+
+    public void ejecutarRecorrido() {
+
+        int tripId =
+            tripService.iniciarRecorrido();
+
+        double aceleracion =
+            sensorService.leerAceleracion();
+
+        double vibracion =
+            sensorService.leerVibracion();
+
+        double inclinacion =
+            sensorService.leerInclinacion();
+
+        double temperatura =
+            sensorService.leerTemperatura();
+
+        String gps =
+            sensorService.obtenerGPS();
+
+        telemetryService.validarDatos(
+            aceleracion,
+            vibracion,
+            temperatura
+        );
+
+        telemetryService.procesarMedicion();
+
+        telemetryService.asociarRecorrido(
+            tripId
+        );
+
+        telemetryRepository.guardarMedicion(
+            aceleracion,
+            vibracion,
+            inclinacion,
+            temperatura,
+            gps,
+            tripId
+        );
+
+        boolean anomalia =
+            anomalyService.detectarAnomalia(
+                aceleracion,
+                0.50
+            );
+
+        if (anomalia) {
+
+            alertService.generarAlerta(
+                "Comportamiento atípico detectado"
+            );
+
+            dashboardService.mostrarAlerta(
+                "Comportamiento atípico detectado"
+            );
+        }
+
+        dashboardService.obtenerIndicadores();
+
+        tripService.finalizarRecorrido(
+            tripId
+        );
+
+        reportService.generarReporte(
+            tripId
+        );
+    }
+}
+```
+
+## 9.11 Método principal
+
+Finalmente, el sistema podría iniciar de la siguiente manera:
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        VectraApplication vectra =
+            new VectraApplication();
+
+        vectra.ejecutarRecorrido();
+    }
+}
+```
+
+---
+
+# 9.12 Flujo representado por el código
+
+El ejemplo anterior sigue este flujo:
+
+```text
+TripService
+    ↓
+iniciar recorrido
+    ↓
+SensorService
+    ↓
+obtener mediciones
+    ↓
+TelemetryService
+    ↓
+validar y procesar
+    ↓
+TelemetryRepository
+    ↓
+guardar datos
+    ↓
+AnomalyDetectionService
+    ↓
+detectar desviación
+    ↓
+AlertService
+    ↓
+generar alerta
+    ↓
+DashboardService
+    ↓
+mostrar información
+    ↓
+ReportService
+    ↓
+generar reporte
+```
+
+La ventaja respecto a una clase única es que `VectraApplication` solamente coordina los componentes.
+
+No contiene directamente la lógica para leer sensores, almacenar información, analizar anomalías o generar reportes.
+
+Cada una de esas responsabilidades pertenece a su respectiva clase.
+
+# 9.13 Relación con el principio SRP
+
+El ejemplo muestra cómo puede aplicarse el Principio de Responsabilidad Única.
+
+En lugar de implementar una clase como:
+
+```java
+public class VectraSystem {
+
+    public void leerSensores() {}
+
+    public void guardarDatos() {}
+
+    public void analizarDatos() {}
+
+    public void detectarAnomalia() {}
+
+    public void generarAlerta() {}
+
+    public void mostrarDashboard() {}
+
+    public void generarReporte() {}
+}
+```
+
+se utilizan componentes especializados:
+
+```text
+SensorService
+TelemetryService
+TripService
+TelemetryRepository
+AnomalyDetectionService
+AlertService
+DashboardService
+ReportService
+```
+
+Esto permite modificar una responsabilidad sin alterar innecesariamente las demás.
+
+El código presentado es una representación conceptual de la arquitectura propuesta. Para una implementación funcional sería necesario integrar posteriormente los sensores reales, el ESP32, el mecanismo de comunicación, la base de datos, el modelo de detección de anomalías y la interfaz gráfica.
