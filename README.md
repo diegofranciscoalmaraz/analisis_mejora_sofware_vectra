@@ -1,4 +1,4 @@
-#VECTRA — Análisis y mejora del diseño de software
+# VECTRA — Análisis y mejora del diseño de software
 
 1. Descripción del proyecto
 
