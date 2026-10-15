@@ -1169,3 +1169,330 @@ Si se agregara una nueva forma de alerta, el cambio se realizaría principalment
 Si el formato de los reportes cambiara, se modificaría `ReportService`.
 
 De esta forma, las modificaciones tienen un impacto más localizado y reducen la necesidad de cambiar componentes que no están directamente relacionados.
+
+# 5. Comparación entre el diseño original y el diseño mejorado
+
+## 5.1 Comparación general
+
+El diseño conceptual original de VECTRA describe un flujo formado por sensado, comunicación, almacenamiento, análisis y visualización.
+
+Este diseño es adecuado para representar el funcionamiento general del sistema, pero todavía no define una organización detallada del software mediante clases especializadas.
+
+La propuesta del integrante 2 toma esas responsabilidades funcionales y las distribuye en componentes independientes.
+
+La comparación general es la siguiente:
+
+| Aspecto | Diseño original | Diseño mejorado |
+|---|---|---|
+| Organización | Flujo conceptual por etapas | Clases especializadas por responsabilidad |
+| Sensado | Sensores y ESP32 | `SensorService` |
+| Procesamiento de mediciones | Integrado conceptualmente en datos/procesamiento | `TelemetryService` |
+| Gestión de recorridos | Funcionalidad general del sistema | `TripService` |
+| Almacenamiento | Componente general de datos | `TelemetryRepository` |
+| Detección de anomalías | Parte del análisis e IA | `AnomalyDetectionService` |
+| Alertas | Parte de la aplicación | `AlertService` |
+| Visualización | Dashboard general | `DashboardService` |
+| Reportes | Funcionalidad del sistema | `ReportService` |
+| Responsabilidades | Representadas a nivel conceptual | Distribuidas explícitamente entre clases |
+| Mantenimiento | Puede volverse complejo al crecer | Cambios más localizados |
+| Pruebas | Dependen de varios componentes | Cada servicio puede probarse por separado |
+| Reutilización | No está definida claramente | Servicios reutilizables |
+| Extensibilidad | Requiere ampliar el diseño general | Se pueden agregar nuevas clases |
+
+---
+
+## 5.2 Diferencia principal
+
+La principal diferencia entre ambos diseños no consiste en cambiar el funcionamiento de VECTRA.
+
+El sistema sigue realizando las mismas actividades principales:
+
+```text
+Medir → Comunicar → Almacenar → Analizar → Detectar → Visualizar
+```
+
+La mejora consiste en definir de manera más clara qué componente de software será responsable de cada actividad.
+
+En el diseño propuesto, las responsabilidades se distribuyen de la siguiente manera:
+
+```text
+SensorService
+      ↓
+TelemetryService
+      ↓
+TelemetryRepository
+      ↓
+AnomalyDetectionService
+      ↓
+AlertService
+      ↓
+DashboardService
+```
+
+Además, `TripService` administra los recorridos y `ReportService` genera los reportes.
+
+Esta separación permite que el sistema mantenga el flujo funcional original, pero con una estructura de software más organizada.
+
+# 6. Beneficios de la solución propuesta
+
+## 6.1 Facilidad de mantenimiento
+
+Uno de los principales beneficios es la facilidad de mantenimiento.
+
+En una estructura con responsabilidades claramente separadas, cada modificación puede realizarse principalmente en el componente relacionado con esa funcionalidad.
+
+Por ejemplo:
+
+- Un cambio en la lectura de sensores se realizaría principalmente en `SensorService`.
+- Un cambio en la validación de telemetría afectaría principalmente a `TelemetryService`.
+- Una modificación en el almacenamiento se concentraría en `TelemetryRepository`.
+- Un nuevo algoritmo de detección se implementaría principalmente en `AnomalyDetectionService`.
+- Un cambio en los reportes se realizaría en `ReportService`.
+
+Esto reduce la necesidad de modificar varias partes del sistema para realizar un cambio pequeño.
+
+También facilita localizar errores, ya que cada clase tiene un propósito específico.
+
+---
+
+## 6.2 Reutilización del código
+
+La nueva estructura permite reutilizar funcionalidades desde distintos componentes del sistema.
+
+Por ejemplo, los históricos almacenados mediante `TelemetryRepository` pueden ser utilizados por:
+
+- `DashboardService`.
+- `AnomalyDetectionService`.
+- `ReportService`.
+
+En lugar de que cada clase implemente su propio mecanismo para obtener las mediciones, todas pueden utilizar un mismo componente responsable del acceso a datos.
+
+Esto disminuye la duplicación de código y permite mantener una única implementación para operaciones comunes.
+
+Otro ejemplo es `TripService`, que puede ser utilizado tanto para consultar información de un recorrido como para relacionar mediciones con una sesión determinada.
+
+---
+
+## 6.3 Facilidad para realizar pruebas
+
+La separación de responsabilidades facilita considerablemente las pruebas del sistema.
+
+Cada servicio puede ser probado individualmente sin necesidad de ejecutar todo VECTRA.
+
+Por ejemplo, para probar `AnomalyDetectionService` pueden proporcionarse datos históricos previamente preparados.
+
+No sería necesario conectar físicamente:
+
+- El vehículo.
+- El ESP32.
+- Los sensores.
+- El GPS.
+- El dashboard.
+
+De igual forma, `AlertService` puede probarse utilizando una anomalía simulada.
+
+`TelemetryRepository` puede probarse verificando que almacene y recupere correctamente la información.
+
+`TripService` puede probarse verificando el inicio, cierre y consulta de recorridos.
+
+Esta separación facilita la creación de pruebas unitarias.
+
+---
+
+## 6.4 Menor acoplamiento
+
+La propuesta también busca reducir el acoplamiento entre los componentes.
+
+Por ejemplo, el dashboard no necesita conocer cómo funcionan físicamente los sensores.
+
+Su responsabilidad es obtener información procesada y presentarla.
+
+De manera similar, `AnomalyDetectionService` no debería encargarse de controlar directamente el ESP32.
+
+Este servicio necesita recibir o consultar datos para analizarlos, pero no necesita conocer los detalles físicos de cómo fueron capturados.
+
+Al reducir estas dependencias, los componentes pueden cambiar de forma más independiente.
+
+---
+
+## 6.5 Mayor claridad del código
+
+Los nombres de las clases permiten identificar fácilmente qué función realiza cada componente.
+
+Por ejemplo:
+
+```text
+SensorService
+```
+
+indica que el componente trabaja con los sensores.
+
+```text
+AnomalyDetectionService
+```
+
+indica que su función se relaciona con la detección de anomalías.
+
+```text
+ReportService
+```
+
+indica que su función es generar reportes.
+
+Esta organización facilita que un nuevo integrante del equipo comprenda la estructura del sistema y encuentre más rápidamente el código relacionado con una funcionalidad.
+
+---
+
+## 6.6 Facilidad para incorporar nuevas funcionalidades
+
+La estructura propuesta facilita la evolución futura de VECTRA.
+
+Si posteriormente se necesitan nuevas funciones, podrían agregarse mediante nuevos componentes especializados.
+
+Por ejemplo:
+
+```text
+NotificationService
+```
+
+podría administrar notificaciones externas como correos electrónicos o mensajes móviles.
+
+```text
+VehicleService
+```
+
+podría administrar varios vehículos registrados.
+
+```text
+UserService
+```
+
+podría encargarse de propietarios, conductores, supervisores y administradores.
+
+```text
+MaintenanceRecommendationService
+```
+
+podría generar recomendaciones basadas en el historial de comportamiento.
+
+Estas nuevas clases podrían incorporarse sin modificar completamente los componentes existentes.
+
+---
+
+## 6.7 Posibilidad de cambiar tecnologías
+
+Otra ventaja de separar responsabilidades es que permite modificar tecnologías específicas con menor impacto.
+
+Por ejemplo, si inicialmente las mediciones se almacenan en una base de datos determinada y posteriormente se decide utilizar otra tecnología de almacenamiento, el cambio podría concentrarse principalmente en la implementación relacionada con `TelemetryRepository`.
+
+De forma similar, si se cambia la interfaz web por una aplicación móvil, la lógica de detección de anomalías puede conservarse.
+
+También sería posible reemplazar un algoritmo inicial por un modelo de inteligencia artificial más avanzado sin modificar directamente la captura de datos.
+
+---
+
+## 6.8 Mejor trabajo colaborativo
+
+Una estructura dividida por responsabilidades también facilita el trabajo entre los integrantes del equipo.
+
+Diferentes desarrolladores podrían trabajar sobre componentes distintos.
+
+Por ejemplo:
+
+```text
+Integrante A → SensorService
+Integrante B → AnomalyDetectionService
+Integrante C → DashboardService
+Integrante D → TelemetryRepository
+```
+
+Esto disminuye la posibilidad de que varias personas modifiquen constantemente el mismo archivo y facilita el uso de ramas y commits separados en GitHub.
+
+---
+
+# 7. Ejemplos de evolución del sistema
+
+## Caso 1: agregar un nuevo sensor
+
+Supongamos que posteriormente se incorpora un sensor adicional.
+
+En un diseño con responsabilidades mezcladas podría ser necesario modificar una clase muy grande que también contiene almacenamiento, análisis y visualización.
+
+En la propuesta mejorada, el cambio se concentraría principalmente en:
+
+```text
+SensorService
+```
+
+El resto del flujo puede continuar funcionando con la misma estructura.
+
+---
+
+## Caso 2: cambiar el algoritmo de inteligencia artificial
+
+VECTRA inicialmente plantea un enfoque de detección de anomalías.
+
+Posteriormente podría utilizarse un algoritmo diferente.
+
+En la estructura propuesta se modificaría principalmente:
+
+```text
+AnomalyDetectionService
+```
+
+No debería ser necesario modificar la lectura de sensores ni la generación del dashboard.
+
+---
+
+## Caso 3: incorporar notificaciones por correo electrónico
+
+Actualmente el sistema considera principalmente la generación de alertas visuales.
+
+Si posteriormente se desea enviar una notificación por correo, podría crearse:
+
+```text
+NotificationService
+```
+
+y relacionarlo con:
+
+```text
+AlertService
+       ↓
+NotificationService
+```
+
+De esta manera se agrega una nueva función sin modificar completamente el sistema.
+
+---
+
+## Caso 4: generar nuevos tipos de reportes
+
+Si el usuario necesita un reporte adicional, la lógica podría agregarse principalmente en:
+
+```text
+ReportService
+```
+
+La detección de anomalías y la lectura de sensores podrían mantenerse sin cambios.
+
+---
+
+# 8. Justificación final de la mejora
+
+La propuesta representa una mejora porque transforma las responsabilidades conceptuales de VECTRA en componentes de software especializados.
+
+Cada clase tiene un propósito más específico y puede evolucionar con menor impacto sobre las demás.
+
+La aplicación del Principio de Responsabilidad Única permite:
+
+- Reducir la complejidad de las clases.
+- Facilitar el mantenimiento.
+- Evitar duplicación de código.
+- Disminuir dependencias innecesarias.
+- Facilitar pruebas unitarias.
+- Favorecer la reutilización de componentes.
+- Permitir que el sistema incorpore nuevas funcionalidades.
+- Facilitar el trabajo colaborativo.
+
+La estructura propuesta mantiene los objetivos originales de VECTRA, pero establece una organización de software más clara para su futura implementación y crecimiento.
