@@ -15,7 +15,7 @@ La arquitectura conceptual del proyecto se organiza en cuatro capas:
 
 Analizar la organización del diseño de VECTRA e identificar oportunidades para distribuir mejor las responsabilidades de sus componentes. A partir de este análisis, se plantea una propuesta que facilite el mantenimiento, las pruebas y la incorporación de nuevas funcionalidades.
 
-3. Propuesta individual A
+3. Propuesta version A
 
 Esta versión propone organizar las responsabilidades mediante clases especializadas. La intención es evitar que un mismo componente tenga que encargarse de demasiadas tareas y facilitar los cambios en cada parte del sistema.
 
