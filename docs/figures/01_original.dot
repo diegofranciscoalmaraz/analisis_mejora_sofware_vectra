@@ -1,0 +1,13 @@
+digraph original {
+  graph [rankdir=LR, bgcolor="transparent", pad=0.25, nodesep=0.5, ranksep=0.75,
+         fontname="DejaVu Sans", label="VECTRA · Arquitectura conceptual documentada", labelloc=t,
+         fontsize=18, fontcolor="#20324e"];
+  node [shape=box, style="rounded,filled", color="#b3c3d4", fillcolor="#eef3f9",
+        fontname="DejaVu Sans", fontsize=12, margin="0.20,0.16"];
+  edge [color="#58718e", arrowsize=0.8, penwidth=1.6];
+  a [label="01 · Sensado\nSensores + ESP32", fillcolor="#dce9f6"];
+  b [label="02 · Comunicación\nWi-Fi", fillcolor="#dce9f6"];
+  c [label="03 · Datos y análisis\nAlmacenar / procesar", fillcolor="#d1efe7"];
+  d [label="04 · Aplicación\nDashboard / alertas", fillcolor="#f6ead3"];
+  a->b->c->d;
+}

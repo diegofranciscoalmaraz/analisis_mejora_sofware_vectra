@@ -1,0 +1,17 @@
+digraph secuencia {
+ graph [rankdir=LR, bgcolor="transparent", fontname="DejaVu Sans", labelloc=t,
+        label="Caso de uso · Lectura, reintento y detección", fontsize=18, fontcolor="#20324e", pad=0.3];
+ node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.20,0.16", fillcolor="#ebf1f8", color="#becddd"];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#536e8b", arrowsize=0.8];
+ a [label="ESP32\nenvía JSON v1"];
+ b [label="API local\nautentica"];
+ c [label="Pipeline\nvalida y normaliza"];
+ d [label="Analizador\ncalcula alertas"];
+ e [label="SQLite\ntransacción"];
+ f [label="Respuesta\n201 / 200 / 409"];
+ a->b->c->d->e->f;
+ g [label="Mismo ID, mismos datos\n200 · sin alertas duplicadas", fillcolor="#dff1e4"];
+ h [label="Mismo ID, otros datos\n409 · conflicto", fillcolor="#fce6e6"];
+ e->g [style=dashed];
+ e->h [style=dashed];
+}
