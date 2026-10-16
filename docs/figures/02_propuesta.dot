@@ -1,0 +1,22 @@
+digraph propuesta {
+  graph [rankdir=TB, bgcolor="transparent", pad=0.32, nodesep=0.34, ranksep=0.48,
+         fontname="DejaVu Sans", label="Propuesta Nacho · Pipeline con garantías explícitas", labelloc=t,
+         fontsize=18, fontcolor="#20324e", splines=ortho];
+  node [shape=box, style="rounded,filled", color="#aabcc9", fillcolor="#eef3f9",
+        fontname="DejaVu Sans", fontsize=11, margin="0.18,0.12"];
+  edge [color="#58718e", arrowsize=0.7, penwidth=1.45];
+  sensor [label="ESP32 · sensores / GPS\ncontrato JSON v1", fillcolor="#dae8fa"];
+  receiver [label="Recepción HTTP local\nBearer + límite 16 KiB", fillcolor="#dae8fa"];
+  validator [label="01 · Validar\ntipos · forma · unidades", fillcolor="#d8efe9"];
+  normalizer [label="02 · Normalizar\nUTC · g · °C · km/h", fillcolor="#d8efe9"];
+  analyze [label="03 · Analizar\nreglas demostrativas", fillcolor="#d8efe9"];
+  atomic [label="04 · Guardar atómicamente\nlectura + alertas en SQLite", fillcolor="#d8efe9"];
+  result [label="Resultado\naceptada / duplicada / conflicto", fillcolor="#f5e6c9"];
+  bad [label="Rechazo controlado\nJSON · validación · rango", color="#d68e8e", fillcolor="#fce6e6"];
+  duplicates [label="Identidad lógica única\ndispositivo + viaje + secuencia", fillcolor="#f5e6c9"];
+  pending [label="Alertas pendientes\nsin despacho externo", fillcolor="#f5e6c9"];
+  sensor->receiver->validator->normalizer->analyze->atomic->result;
+  validator->bad [style=dashed, color="#c26060"];
+  atomic->duplicates [style=dashed, color="#9e7845"];
+  atomic->pending [style=dashed, color="#9e7845"];
+}
